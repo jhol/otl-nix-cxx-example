@@ -3,27 +3,27 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-22.11";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }: {
-    packages."x86_64-linux" = let
-      pkgs = import nixpkgs {
-        system = "x86_64-linux";
-      };
-    in {
-      default = pkgs.stdenv.mkDerivation {
-        name = "otl_nix_test_app";
-        src = ./.;
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system: let
+        pkgs = import nixpkgs { inherit system; };
+      in {
+        packages = {
+          default = pkgs.stdenv.mkDerivation {
+            name = "otl_nix_test_app";
+            src = ./.;
 
-        nativeBuildInputs = [
-          pkgs.cmake
-        ];
+            nativeBuildInputs = with pkgs; [
+              cmake
+            ];
 
-        buildInputs = [
-          pkgs.boost
-          pkgs.SDL2
-        ];
-      };
-    };
-  };
+            buildInputs = with pkgs; [
+              boost
+              SDL2
+            ];
+          };
+        };
+      });
 }
